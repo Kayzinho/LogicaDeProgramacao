@@ -11,4 +11,4 @@ def calcular(altura, largura):
         return f"Área: {area:.2f} m²\nVocê precisará de aproximadamente {math.ceil(litros)} litros de tinta."
     
     except ValueError:
-        return 'Valores inválidos'
+        return 'Valores inválidos, use apenas números e, em caso de decimais, use "."'
