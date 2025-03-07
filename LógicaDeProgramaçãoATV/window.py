@@ -3,8 +3,8 @@ from code import calcular
 
 layout = [
     [sg.Text('Calcular a quantidade de tinta necessária por m²')],
-    [sg.Text('Altura:'), sg.InputText(key='Altura')],
-    [sg.Text('Largura:'), sg.InputText(key='Largura')],
+    [sg.Text('Altura(m):'), sg.InputText(key='Altura')],
+    [sg.Text('Largura(m):'), sg.InputText(key='Largura')],
     [sg.Button('Calcular'), sg.Button('Sair')],
     [sg.Text('', key='Area')],
 ]
