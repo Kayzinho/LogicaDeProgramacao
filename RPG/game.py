@@ -10,41 +10,42 @@ system('cls')
 # ----- VARIÁVEIS ÚTEIS ----- #
 
 player_data = game_data.game_data['player_data']
+personagem = game_data.game_data['personagens']
 
 # ----- FUNÇÕES ----- #
-#                                                                   intervalo original = 0.075
-def exibir_mensagem(texto, italico=False, negrito=False, espacamento=False, intervalo=0.075):
+#                                                                                                                    intervalo original = 0.065
+def exibir_mensagem(personagem_escolhido='', texto='', italico=False, negrito=False, espacamento=False, desconhecido=False, intervalo=0.065):
     negrito = '\033[1m' if negrito else ''
     italico = '\033[3m' if italico else ''
-    espacamento = ' ' if espacamento else ''
-    texto = texto[0].upper() + texto[1:]
     intervalo0 = intervalo
-    for caractere in texto:
-        intervalo = 0.6 if caractere in (',','.','?','\n') else intervalo0
-        stdout.write(f'{italico}{negrito}{caractere}{espacamento}\033[0m')
+    if personagem_escolhido:
+        identidade = 2 if desconhecido else 0
+        cor = f'\033[{personagem_escolhido[1]}m'
+        texto = f"{personagem_escolhido[identidade]}{texto[0].upper() + texto[1:]}" if texto else ''
+    else:
+        cor = ''
+        texto = texto[0].upper() + texto[1:]
+
+    for i, caractere in enumerate(texto):
+        espacamento = ' ' if espacamento and i < len(texto)-1 else ''
+        cor = '' if caractere == ':' else cor
+        intervalo = 0.5 if caractere in (',','.','?','\n') else intervalo0
+        stdout.write(f'{italico}{negrito}{cor}{caractere}{espacamento}\033[0m')
         stdout.flush()
         sleep(intervalo)
-    print()
-
-# mensagem, mensagem_erro e mensagem_except são strings, valores_permitidos deve ser uma tupla, ex: (1,2,3)
-def pegar_input_int(mensagem, mensagem_erro='', mensagem_except='', valores_permitidos=None):
-    player_input = int(input(mensagem))
-    while True:
-        try:
-            return player_input if player_input in valores_permitidos else exibir_mensagem(mensagem_erro)
-        except ValueError:
-            exibir_mensagem(mensagem_except)
 
 # mensagem, mensagem_erro_valor e mensagem_except são strings, valores_permitidos deve ser uma tupla, ex: (1,2,3)
-def pegar_input_str(mensagem, mensagem_erro_valor='', mensagem_erro='', valores_permitidos=None):
+def pegar_input_str(personagem1='', mensagem='', mensagem_erro_valor='', mensagem_erro='',
+                    valores_permitidos=None, personagem2='', desconhecido=False):
     while True:
-        player_input = (input(mensagem)).strip().capitalize()
+        exibir_mensagem(personagem1, mensagem)
+        player_input = input().strip().capitalize()
         if valores_permitidos is not None and player_input.lower() not in valores_permitidos:
-            exibir_mensagem(mensagem_erro_valor)
+            exibir_mensagem(personagem1, mensagem_erro_valor)
         elif player_input.isalpha():
             return player_input
         else:
-            exibir_mensagem(mensagem_erro)
+            exibir_mensagem(personagem2, mensagem_erro, desconhecido=desconhecido)
 
 def mostrar_texto(texto):
     for i in texto:
@@ -55,42 +56,48 @@ def mostrar_texto(texto):
 mostrar_texto(texts.introducao)
 
 while True:
-    player_data['Nome'] = pegar_input_str('Você: Meu nome... Meu nome é ','',
-    'Desconhecido 1: Ainda está acordando... Deixa eu perguntar de novo, qual é o seu nome?\n')
-    exibir_mensagem(f'Desconhecido 1: Ah, {player_data["Nome"]}, esse é o seu nome?\n')
-    exibir_mensagem('Sim ou não?', True, True)
-    player_input = pegar_input_str('Você: ',f'Desconhecido 1: Hein? Não entendi, seu nome é {player_data["Nome"]}?\n',
-                                    '', ('s','si','sim','n','na','nao','nã','não'))
+    player_data['Nome'] = pegar_input_str(personagem["player"],'Meu nome... Meu nome é ','',
+    'Ainda está acordando... Deixa eu perguntar de novo, qual é o seu nome?\n\n', personagem2=personagem["foe"], desconhecido=True)
+
+    print()
+    exibir_mensagem(personagem["foe"],f'Ah, {player_data["Nome"]}, esse é o seu nome?\n\n', desconhecido=True)
+    exibir_mensagem('','Sim ou não?\n\n', True, True)
+
+    player_input = pegar_input_str(personagem["player"],'...',f'Hein? Não entendi, seu nome é {player_data["Nome"]}?\n',
+                                    '', ('s','si','sim','n','na','nao','nã','não',), personagem["foe"], True)
+    
     if player_input.lower() in ('s','si','sim'):
-        exibir_mensagem(f'Desconhecido 2: {player_data["Nome"]}, não é? É um nome peculiar, você não deve ser daqui')
-        exibir_mensagem('Desconhecido 1: Vai ficar tudo bem, vamos te levar para um lugar seguro')
+        print()
+        exibir_mensagem(personagem["hannad"],f'{player_data["Nome"]}, não é? É um nome peculiar, você não deve ser daqui\n\n', desconhecido=True)
+        exibir_mensagem(personagem["foe"],'Vai ficar tudo bem, vamos te levar para um lugar seguro\n\n', desconhecido=True)
         break
     else:
-        exibir_mensagem('Desconhecido 1: Está tudo bem, você ainda está acordando, vamos tentar de novo, qual é o seu nome?\n')
+        exibir_mensagem(personagem["foe"],'Está tudo bem, você ainda está acordando, vamos tentar de novo, qual é o seu nome?\n\n', desconhecido=True)
 
 reload(texts)
 
 mostrar_texto(texts.a_viagem)
 
 while True:
-    exibir_mensagem('Masculino ou Feminino?', True, True)
-    player_input = pegar_input_str('Você: Parece ser ', 'Você: (Não sei se isso existe por aqui)\n',
+    exibir_mensagem('','Masculino ou Feminino?\n\n', True, True)
+    player_input = pegar_input_str(personagem["player"],'Parece ser ', '(Não sei se isso existe por aqui)\n\n',
                                     '', ('masculino', 'feminino'))
+    print()
     genero = player_input
-    exibir_mensagem(f'Você: ({genero}? Será que é isso mesmo?)\n')
-    exibir_mensagem('Sim ou não?', True, True)
-    player_input = pegar_input_str('Você: Acho que ', 'Você: (Não é isso...)\n', '',
+    exibir_mensagem(personagem["player"],f'({genero}? Será que é isso mesmo?)\n\n')
+    exibir_mensagem('','\nSim ou não?\n\n', True, True)
+    player_input = pegar_input_str(personagem["player"],'Acho que ', '(Não é isso...)\n\n', '',
                                    ('s','si','sim','n','na','nao','nã','não'))
     if player_input.lower() in ('s','si','sim'):
-        pronomes = ('ele', 'dele', 'o', 'seu', 'rapaz') if genero.lower() == 'masculino' else ('ela', 'dela', 'a', 'sua','moça')
-        sexo = 'Homem' if genero.lower() == 'masculino' else 'Mulher'
-        exibir_mensagem(f'Você: Pode se referir a mim como "{pronomes[0]}"\n')
+        pronomes = ('ele', 'dele', 'o', 'seu', 'rapaz', 'homem') if genero.lower() == 'masculino' else ('ela', 'dela', 'a', 'sua','moça', 'mulher')
+        print()
+        exibir_mensagem(personagem["player"],f'Pode se referir a mim como "{pronomes[0]}"\n\n')
         player_data['Genero'] = genero.capitalize()
         player_data['Pronomes'] = pronomes
-        player_data['Sexo'] = sexo
         break
     else:
-        exibir_mensagem('Hannad: Anda logo, tem problema de visão?\n''Foe: Hannad...\n')
+        exibir_mensagem(personagem["hannad"],'Anda logo, tem problema de visão?\n\n')
+        exibir_mensagem(personagem["foe"],'Hannad...\n\n')
 
 reload(texts)
 
